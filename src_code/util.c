@@ -16,30 +16,30 @@
 
 int read_conf(char* filename, tk_conf_t* conf){
     // 以只读方式打开文件
-    FILE* fp = fopen(filename, "r");
-    if(!fp)
-        return TK_CONF_ERROR;
+    FILE* fp = fopen(filename, "r");              //打开失败返回0
+    if(!fp)                               
+        return TK_CONF_ERROR;                     //宏定义，-1
 
-    char buff[BUFLEN];
+    char buff[BUFLEN];                            //#define BUFLEN 8192
     int buff_len = BUFLEN;
-    char* curr_pos = buff;
-    char* delim_pos = NULL;
-    int i = 0;
+    char* curr_pos = buff;                        //指针当前位置，初始为数组起始位置
+    char* delim_pos = NULL;                       //分界符，用于分隔各个参数
+    int i = 0;                                    
     int pos = 0;
     int line_len = 0;
-    while(fgets(curr_pos, buff_len - pos, fp)){
+    while(fgets(curr_pos, buff_len - pos, fp)){   //char *fgets(char *str, int n, FILE *stream) 从指定的流 stream 读取一行信息，并把它存储在 str 所指向的字符串内。当读取 (n-1) 个字符时，或者读取到换行符时，或者到达文件末尾时，它会停止，具体视情况而定。
         // 定位每行第一个界定符位置
-        delim_pos = strstr(curr_pos, DELIM);
-        if(!delim_pos)
+        delim_pos = strstr(curr_pos, DELIM);      // char *strstr(const char *haystack, const char *needle) 在字符串 haystack 中查找第一次出现字符串 needle 的位置，不包含终止符 '\0'。
+        if(!delim_pos)                            //没找到返回NULL
             return TK_CONF_ERROR;
         if(curr_pos[strlen(curr_pos) - 1] == '\n'){
-            curr_pos[strlen(curr_pos) - 1] = '\0';
+            curr_pos[strlen(curr_pos) - 1] = '\0';        //改为字符串结束符
         }
 
         // 得到root信息
-        if(strncmp("root", curr_pos, 4) == 0){
+        if(strncmp("root", curr_pos, 4) == 0){            // int strncmp(const char *str1, const char *str2, size_t n) 把 str1 和 str2 进行比较，最多比较前 n 个字节。
             delim_pos = delim_pos + 1;
-            while(*delim_pos != '#'){
+            while(*delim_pos != '#'){                     //conf->root = ./
                 conf->root[i++] = *delim_pos;
                 ++delim_pos;
             }
@@ -47,28 +47,28 @@ int read_conf(char* filename, tk_conf_t* conf){
 
         // 得到port值
         if(strncmp("port", curr_pos, 4) == 0)
-            conf->port = atoi(delim_pos + 1);
+            conf->port = atoi(delim_pos + 1);            //conf->port = 3000，int atoi(const char *str) 把参数 str 所指向的字符串转换为一个整数（类型为 int 型）。
 
         // 得到thread数量
         if(strncmp("thread_num", curr_pos, 9) == 0)
-            conf->thread_num = atoi(delim_pos + 1);
+            conf->thread_num = atoi(delim_pos + 1);      //conf->thread_num = 4
 
         // line_len得到当前行行长
         line_len = strlen(curr_pos);
 
         // 当前位置跳转至下一行首部
-        curr_pos += line_len;
+        curr_pos += line_len;                   //最终三行信息均被存在curr_pos指向的字符串中
     }
     fclose(fp);
     return TK_CONF_OK;
 }
 
 void handle_for_sigpipe(){
-    struct sigaction sa;
-    memset(&sa, '\0', sizeof(sa));
-    sa.sa_handler = SIG_IGN;
-    sa.sa_flags = 0;
-    if(sigaction(SIGPIPE, &sa, NULL))
+    struct sigaction sa;                        //int sigaction(int signum, const struct sigaction *act,struct sigaction *oldact);
+    memset(&sa, '\0', sizeof(sa));              //void *memset(void *str, int c, size_t n) 复制字符 c（一个无符号字符）到参数 str 所指向的字符串的前 n 个字符。
+    sa.sa_handler = SIG_IGN;                    //新的信号处理函数
+    sa.sa_flags = 0;                            //用来设置信号处理的其他相关操作
+    if(sigaction(SIGPIPE, &sa, NULL))           //signum参数指出要捕获的信号类型，act参数指定新的信号处理方式，oldact参数输出先前信号的处理方式（如果不为NULL的话）
         return;
 }
 
@@ -87,9 +87,9 @@ int socket_bind_listen(int port){
         return -1;
     }
 
-    // 设置服务器IP和Port，和监听描述副绑定
+    // 设置服务器IP和Port，和监听描述符绑定
     struct sockaddr_in server_addr;
-    bzero((char*)&server_addr, sizeof(server_addr));
+    bzero((char*)&server_addr, sizeof(server_addr));              //置字节字符串前n个字节为零且包括‘\0’。
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     server_addr.sin_port = htons((unsigned short)port);
