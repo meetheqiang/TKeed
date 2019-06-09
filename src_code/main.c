@@ -7,9 +7,9 @@
 #include "threadpool.h"
 #include "http.h"
 
-#define DEFAULT_CONFIG "tkeed.conf"
+#define DEFAULT_CONFIG "tkeed.conf"     //tkeed.conf为存储配置信息的文本文件：root=./#，port=3000，thread_num=4
 
-extern struct epoll_event *events;
+extern struct epoll_event *events;      //epoll的事件注册函数中的参数，
 char *conf_file = DEFAULT_CONFIG;
 tk_conf_t conf;
 
