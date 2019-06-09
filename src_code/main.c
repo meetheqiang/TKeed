@@ -9,16 +9,16 @@
 
 #define DEFAULT_CONFIG "tkeed.conf"     //tkeed.conf为存储配置信息的文本文件：root=./#，port=3000，thread_num=4
 
-extern struct epoll_event *events;      //epoll的事件注册函数中的参数，
+extern struct epoll_event *events;      //epoll的事件注册函数中的参数，告诉内核需要监听的事件：events,data;
 char *conf_file = DEFAULT_CONFIG;
-tk_conf_t conf;
+tk_conf_t conf;                         //配置信息结构体，在util.h中定义
 
 int main(int argc, char *argv[]){
     // 读取配置文件
-    read_conf(conf_file, &conf);
+    read_conf(conf_file, &conf);        //在util.c定义，将conf_file的信息读入到conf
 
     // 处理SIGPIPE
-    handle_for_sigpipe();
+    handle_for_sigpipe();              //在util.c定义，sigaction(SIGPIPE, &sa, NULL)
 
     // 初始化套接字开始监听
     int listen_fd = socket_bind_listen(conf.port);
